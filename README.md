@@ -130,6 +130,8 @@ python predict.py
 jupyter notebook Student_Predict.ipynb
 ```
 
+[Open `Student_Predict.ipynb` in Jupyter](Student_Predict.ipynb)
+
 ---
 
 ## 💡 Key Takeaways & Conclusion
