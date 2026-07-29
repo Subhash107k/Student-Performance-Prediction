@@ -1,0 +1,179 @@
+{
+  "best_model": "Logistic Regression",
+  "metrics": {
+    "Logistic Regression": {
+      "Accuracy": 0.7273,
+      "Precision": 0.6364,
+      "Recall": 0.5185,
+      "F1": 0.5714,
+      "ROC-AUC": 0.7837,
+      "CV_Mean": 0.746
+    },
+    "Decision Tree": {
+      "Accuracy": 0.6883,
+      "Precision": 0.575,
+      "Recall": 0.4259,
+      "F1": 0.4894,
+      "ROC-AUC": 0.7384,
+      "CV_Mean": 0.7134
+    },
+    "Random Forest": {
+      "Accuracy": 0.7013,
+      "Precision": 0.5833,
+      "Recall": 0.5185,
+      "F1": 0.549,
+      "ROC-AUC": 0.7659,
+      "CV_Mean": 0.7622
+    },
+    "Support Vector Machine": {
+      "Accuracy": 0.7013,
+      "Precision": 0.587,
+      "Recall": 0.5,
+      "F1": 0.54,
+      "ROC-AUC": 0.7613,
+      "CV_Mean": 0.7639
+    },
+    "K-Nearest Neighbor": {
+      "Accuracy": 0.6753,
+      "Precision": 0.537,
+      "Recall": 0.537,
+      "F1": 0.537,
+      "ROC-AUC": 0.7353,
+      "CV_Mean": 0.7525
+    },
+    "Naive Bayes": {
+      "Accuracy": 0.7208,
+      "Precision": 0.6,
+      "Recall": 0.6111,
+      "F1": 0.6055,
+      "ROC-AUC": 0.7804,
+      "CV_Mean": 0.7443
+    }
+  },
+  "confusion_matrices": {
+    "Logistic Regression": [
+      [
+        84,
+        16
+      ],
+      [
+        26,
+        28
+      ]
+    ],
+    "Decision Tree": [
+      [
+        83,
+        17
+      ],
+      [
+        31,
+        23
+      ]
+    ],
+    "Random Forest": [
+      [
+        80,
+        20
+      ],
+      [
+        26,
+        28
+      ]
+    ],
+    "Support Vector Machine": [
+      [
+        81,
+        19
+      ],
+      [
+        27,
+        27
+      ]
+    ],
+    "K-Nearest Neighbor": [
+      [
+        75,
+        25
+      ],
+      [
+        25,
+        29
+      ]
+    ],
+    "Naive Bayes": [
+      [
+        78,
+        22
+      ],
+      [
+        21,
+        33
+      ]
+    ]
+  },
+  "feature_importances": [
+    {
+      "feature": "Attendance_Percentage",
+      "importance": 0.3953
+    },
+    {
+      "feature": "Age",
+      "importance": 0.1651
+    },
+    {
+      "feature": "Study_Efficiency",
+      "importance": 0.141
+    },
+    {
+      "feature": "Previous_Score",
+      "importance": 0.1089
+    },
+    {
+      "feature": "Sleep_Hours",
+      "importance": 0.1084
+    },
+    {
+      "feature": "Study_Time_Hours",
+      "importance": 0.0813
+    },
+    {
+      "feature": "Gender",
+      "importance": 0.0
+    },
+    {
+      "feature": "Parent_Education",
+      "importance": 0.0
+    },
+    {
+      "feature": "Family_Support",
+      "importance": 0.0
+    },
+    {
+      "feature": "Internet_Access",
+      "importance": 0.0
+    },
+    {
+      "feature": "Extra_Activities",
+      "importance": 0.0
+    }
+  ],
+  "features": [
+    "Gender",
+    "Age",
+    "Study_Time_Hours",
+    "Attendance_Percentage",
+    "Previous_Score",
+    "Parent_Education",
+    "Family_Support",
+    "Internet_Access",
+    "Extra_Activities",
+    "Sleep_Hours",
+    "Study_Efficiency"
+  ],
+  "total_samples": 768,
+  "train_samples": 614,
+  "test_samples": 154,
+  "target_variable": "Performance",
+  "dataset_path": "data\\student_performance.csv"
+}
