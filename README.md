@@ -31,8 +31,7 @@ Student-Performance-Prediction/
 ├── requirements.txt                  # Required Python dependencies
 ├── README.md                         # Project documentation
 ├── generate_presentation.py          # PowerPoint presentation slide generator
-├── Student_Performance_
-    Prediction_ML_Presentation.pptx   # 18-slide college defense presentation deck
+├── Student_Performance_Prediction_ML_Presentation.pptx   # Presentation file located in project root
 │
 ├── images/                           # Generated EDA and Model Evaluation charts
 │   ├── performance_distribution.png
@@ -47,6 +46,8 @@ Student-Performance-Prediction/
     ├── student_performance_model.pkl
     └── model_metadata.json
 ```
+
+Presentation deck (located in the project root): [Student_Performance_Prediction_ML_Presentation.pptx](Student_Performance_Prediction_ML_Presentation.pptx)
 
 ---
 
@@ -126,9 +127,9 @@ python predict.py
 
 ### 4. Open Jupyter Notebook
 
-```bash
+````bash
 jupyter notebook Student_Predict.ipynb
-```
+```m
 
 [Open `Student_Predict.ipynb` in Jupyter](Student_Predict.ipynb)
 
@@ -218,3 +219,4 @@ This project is released under the **MIT License**, allowing educational and res
 Department of Computer Science & Engineering
 
 _"Using Machine Learning to Transform Educational Outcomes Through Data-Driven Insights."_
+````
