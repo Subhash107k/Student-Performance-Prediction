@@ -120,6 +120,20 @@ def run_pipeline():
         df_encoded[col] = le.fit_transform(df_encoded[col].astype(str))
         label_encoders[col] = le
 
+    # Make categorical preprocessing robust for prediction examples and future inputs.
+    def encode_categorical_features(frame):
+        encoded = frame.copy()
+        for col in categorical_cols:
+            if col not in encoded.columns:
+                continue
+            values = encoded[col].astype(str)
+            if col in label_encoders:
+                known_values = set(label_encoders[col].classes_)
+                fallback_value = next(iter(known_values), 'Unknown')
+                encoded[col] = values.map(lambda v: v if v in known_values else fallback_value)
+                encoded[col] = label_encoders[col].transform(encoded[col].astype(str))
+        return encoded
+
     # Drop ID and exact grade from feature set to avoid target leakage
     features = ['Gender', 'Age', 'Study_Time_Hours', 'Attendance_Percentage', 
                 'Previous_Score', 'Parent_Education', 'Family_Support', 
@@ -319,10 +333,7 @@ def run_pipeline():
     
     # Encode and prepare input
     sample_df = pd.DataFrame([sample_student])
-    for col in label_encoders:
-        if col in sample_df.columns:
-            sample_df[col] = label_encoders[col].transform(sample_df[col].astype(str))
-            
+    sample_df = encode_categorical_features(sample_df)
     sample_features = sample_df[features]
     if best_model_name in ["Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"]:
         sample_features_scaled = scaler.transform(sample_features)

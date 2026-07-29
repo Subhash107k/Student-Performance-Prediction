@@ -1,53 +1,59 @@
 {
-  "best_model": "Logistic Regression",
+  "best_model": "Naive Bayes",
   "metrics": {
     "Logistic Regression": {
-      "Accuracy": 0.7273,
-      "Precision": 0.6364,
-      "Recall": 0.5185,
-      "F1": 0.5714,
-      "ROC-AUC": 0.7837,
-      "CV_Mean": 0.746
+      "Accuracy": 0.7208,
+      "Precision": 0.6279,
+      "Recall": 0.5,
+      "F1": 0.5567,
+      "ROC-AUC": 0.7887,
+      "CV_Mean": 0.7525,
+      "CV_Std": 0.0204
     },
     "Decision Tree": {
-      "Accuracy": 0.6883,
-      "Precision": 0.575,
-      "Recall": 0.4259,
-      "F1": 0.4894,
-      "ROC-AUC": 0.7384,
-      "CV_Mean": 0.7134
+      "Accuracy": 0.6623,
+      "Precision": 0.5312,
+      "Recall": 0.3148,
+      "F1": 0.3953,
+      "ROC-AUC": 0.7259,
+      "CV_Mean": 0.7085,
+      "CV_Std": 0.0398
     },
     "Random Forest": {
-      "Accuracy": 0.7013,
-      "Precision": 0.5833,
-      "Recall": 0.5185,
-      "F1": 0.549,
-      "ROC-AUC": 0.7659,
-      "CV_Mean": 0.7622
+      "Accuracy": 0.7143,
+      "Precision": 0.6042,
+      "Recall": 0.537,
+      "F1": 0.5686,
+      "ROC-AUC": 0.7783,
+      "CV_Mean": 0.7671,
+      "CV_Std": 0.0316
     },
     "Support Vector Machine": {
-      "Accuracy": 0.7013,
-      "Precision": 0.587,
-      "Recall": 0.5,
-      "F1": 0.54,
-      "ROC-AUC": 0.7613,
-      "CV_Mean": 0.7639
+      "Accuracy": 0.7078,
+      "Precision": 0.5918,
+      "Recall": 0.537,
+      "F1": 0.5631,
+      "ROC-AUC": 0.7676,
+      "CV_Mean": 0.7737,
+      "CV_Std": 0.0221
     },
     "K-Nearest Neighbor": {
-      "Accuracy": 0.6753,
-      "Precision": 0.537,
-      "Recall": 0.537,
-      "F1": 0.537,
-      "ROC-AUC": 0.7353,
-      "CV_Mean": 0.7525
+      "Accuracy": 0.6623,
+      "Precision": 0.5172,
+      "Recall": 0.5556,
+      "F1": 0.5357,
+      "ROC-AUC": 0.7256,
+      "CV_Mean": 0.7574,
+      "CV_Std": 0.0395
     },
     "Naive Bayes": {
-      "Accuracy": 0.7208,
-      "Precision": 0.6,
-      "Recall": 0.6111,
-      "F1": 0.6055,
-      "ROC-AUC": 0.7804,
-      "CV_Mean": 0.7443
+      "Accuracy": 0.7532,
+      "Precision": 0.6481,
+      "Recall": 0.6481,
+      "F1": 0.6481,
+      "ROC-AUC": 0.787,
+      "CV_Mean": 0.7411,
+      "CV_Std": 0.0152
     }
   },
   "confusion_matrices": {
@@ -57,88 +63,88 @@
         16
       ],
       [
-        26,
-        28
-      ]
-    ],
-    "Decision Tree": [
-      [
-        83,
-        17
-      ],
-      [
-        31,
-        23
-      ]
-    ],
-    "Random Forest": [
-      [
-        80,
-        20
-      ],
-      [
-        26,
-        28
-      ]
-    ],
-    "Support Vector Machine": [
-      [
-        81,
-        19
-      ],
-      [
         27,
         27
       ]
     ],
-    "K-Nearest Neighbor": [
+    "Decision Tree": [
       [
-        75,
-        25
+        85,
+        15
+      ],
+      [
+        37,
+        17
+      ]
+    ],
+    "Random Forest": [
+      [
+        81,
+        19
       ],
       [
         25,
         29
       ]
     ],
-    "Naive Bayes": [
+    "Support Vector Machine": [
       [
-        78,
-        22
+        80,
+        20
       ],
       [
-        21,
-        33
+        25,
+        29
+      ]
+    ],
+    "K-Nearest Neighbor": [
+      [
+        72,
+        28
+      ],
+      [
+        24,
+        30
+      ]
+    ],
+    "Naive Bayes": [
+      [
+        81,
+        19
+      ],
+      [
+        19,
+        35
       ]
     ]
   },
   "feature_importances": [
     {
       "feature": "Attendance_Percentage",
-      "importance": 0.3953
+      "importance": 0.3963
     },
     {
       "feature": "Age",
-      "importance": 0.1651
+      "importance": 0.1699
     },
     {
       "feature": "Study_Efficiency",
-      "importance": 0.141
-    },
-    {
-      "feature": "Previous_Score",
-      "importance": 0.1089
+      "importance": 0.1397
     },
     {
       "feature": "Sleep_Hours",
-      "importance": 0.1084
+      "importance": 0.1079
+    },
+    {
+      "feature": "Previous_Score",
+      "importance": 0.1041
     },
     {
       "feature": "Study_Time_Hours",
-      "importance": 0.0813
+      "importance": 0.0822
     },
     {
-      "feature": "Gender",
+      "feature": "Extra_Activities",
       "importance": 0.0
     },
     {
@@ -154,7 +160,7 @@
       "importance": 0.0
     },
     {
-      "feature": "Extra_Activities",
+      "feature": "Gender",
       "importance": 0.0
     }
   ],
@@ -173,7 +179,5 @@
   ],
   "total_samples": 768,
   "train_samples": 614,
-  "test_samples": 154,
-  "target_variable": "Performance",
-  "dataset_path": "data\\student_performance.csv"
+  "test_samples": 154
 }

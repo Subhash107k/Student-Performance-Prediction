@@ -1,6 +1,0 @@
-{
-  "name": "Student Performance Prediction ML Microproject",
-  "description": "Complete Machine Learning microproject for student performance prediction, featuring EDA, model comparison, interactive prediction, notebook, technical report, and presentation slides.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
