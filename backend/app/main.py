@@ -14,14 +14,20 @@ from .api.weather import router as weather_router
 
 app = FastAPI(title="Student Performance Prediction API", version="1.0.0")
 app.include_router(weather_router)
+import os
+
+cors_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4173",
+    "http://localhost:3000",
+]
+if os.getenv("FRONTEND_URL"):
+    cors_origins.append(os.getenv("FRONTEND_URL"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:4173",
-        "http://localhost:3000"
-    ],
+    allow_origins=cors_origins if os.getenv("FRONTEND_URL") else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
