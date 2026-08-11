@@ -60,6 +60,22 @@ class PredictionRequest(BaseModel):
     sleepHours: float | None = None
 
 
+@app.get("/")
+def root() -> dict[str, Any]:
+    return {
+        "message": "Student Performance Prediction & Real-Time Weather API",
+        "status": "online",
+        "health": "/health",
+        "docs": "/docs",
+        "author": "Subhash107k"
+    }
+
+
+@app.get("/favicon.ico")
+def favicon() -> dict[str, str]:
+    return {"status": "ok"}
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {"status": "ok"}
