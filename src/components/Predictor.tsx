@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { predictStudent } from "../services/api";
+import { PredictionResult } from "./ResultCard";
 import { 
   CheckCircle2, 
   AlertTriangle, 
@@ -39,14 +41,9 @@ export const Predictor: React.FC = () => {
   const handlePredict = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
-      const data = await response.json();
-      if (data.success) {
-        setResult(data);
+      const response = await predictStudent(formData as Record<string, unknown>);
+      if (response.success) {
+        setResult(response as unknown as PredictionResult);
       }
     } catch (err) {
       console.error("Prediction error:", err);

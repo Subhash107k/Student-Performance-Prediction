@@ -5,6 +5,7 @@ import { Predict } from "./pages/Predict";
 import { Analytics } from "./pages/Analytics";
 import { Dataset } from "./pages/Dataset";
 import { About } from "./pages/About";
+import { WeatherDashboard } from "./pages/WeatherDashboard";
 import { Footer } from "./components/Footer";
 import { GithubModal } from "./components/GithubModal";
 import { Toast } from "./components/Toast";
@@ -48,6 +49,7 @@ export default function App() {
             )}
             {activeTab === "analytics" && <Analytics />}
             {activeTab === "dataset" && <Dataset onShowToast={showToast} />}
+            {activeTab === "weather" && <WeatherDashboard />}
             {activeTab === "about" && <About onShowToast={showToast} />}
           </motion.div>
         </AnimatePresence>

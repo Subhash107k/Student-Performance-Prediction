@@ -16,6 +16,8 @@ interface FeatureImp {
   importance: number;
 }
 
+import { fetchProjectData } from "../services/api";
+
 export const ModelComparison: React.FC = () => {
   const [data, setData] = useState<{
     best_model: string;
@@ -24,11 +26,10 @@ export const ModelComparison: React.FC = () => {
   } | null>(null);
 
   useEffect(() => {
-    fetch("/api/project-data")
-      .then((res) => res.json())
+    fetchProjectData()
       .then((json) => {
-        if (json.success) {
-          setData(json);
+        if (json.success && json.metadata) {
+          setData(json.metadata);
         }
       })
       .catch((err) => console.error(err));
@@ -150,7 +151,7 @@ export const ModelComparison: React.FC = () => {
               >
                 <XAxis type="number" domain={[0, 0.5]} />
                 <YAxis dataKey="feature" type="category" tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(val: any) => [`${(Number(val) * 100).toFixed(2)}%`, "Importance"]} />
+                <Tooltip formatter={(val: number | string) => [`${(Number(val) * 100).toFixed(2)}%`, "Importance"]} />
                 <Bar dataKey="importance" fill="#10b981" radius={[0, 6, 6, 0]}>
                   {data.feature_importances.map((entry, index) => (
                     <Cell

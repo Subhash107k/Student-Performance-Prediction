@@ -1,3 +1,8 @@
+# Backend Server
+fastapi>=0.110.0
+uvicorn[standard]>=0.30.0
+httpx>=0.24.0
+
 # Machine Learning & Data Science Core Libraries
 pandas>=2.0.0
 numpy>=1.24.0

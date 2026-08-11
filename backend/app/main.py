@@ -10,11 +10,18 @@ from .services.training_service import (
     predict_student,
     train_model,
 )
+from .api.weather import router as weather_router
 
 app = FastAPI(title="Student Performance Prediction API", version="1.0.0")
+app.include_router(weather_router)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -115,3 +122,30 @@ def feature_importance() -> dict[str, Any]:
         return {"success": True, "feature_importances": metadata.get("feature_importances", [])}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+@app.get("/download/{filename}")
+def download_file(filename: str) -> Any:
+    safe_files = {
+        "student_performance.csv": "data/student_performance.csv",
+        "train.py": "train.py",
+        "predict.py": "predict.py",
+        "notebook.ipynb": "Student_Predict.ipynb",
+        "requirements.txt": "requirements.txt",
+        "README.md": "README.md",
+        "presentation.pptx": "Student_Performance_Prediction_ML_Presentation.pptx",
+        "student_performance_model.pkl": "models/student_performance_model.pkl"
+    }
+    
+    if filename not in safe_files:
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    root_dir = Path(__file__).resolve().parents[2]
+    file_path = root_dir / safe_files[filename]
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found or still generating")
+        
+    return FileResponse(path=file_path, filename=filename)

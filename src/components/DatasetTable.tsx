@@ -10,26 +10,7 @@ import {
   AlertTriangle,
   BarChart3,
 } from "lucide-react";
-import { fetchDatasetPreview, fetchDatasetSummary } from "../services/api";
-
-interface DatasetRow {
-  id: string;
-  gender: string;
-  age: number;
-  studyTimeHours: number;
-  attendancePercentage: number;
-  previousScore: number;
-  parentEducation: string;
-  familySupport: string;
-  internetAccess: string;
-  extraActivities: string;
-  sleepHours: number;
-  hoursStudied: number;
-  assignmentsCompleted: number;
-  participationLevel: string;
-  finalGrade: number;
-  performance: string;
-}
+import { fetchDatasetPreview, fetchDatasetSummary, DatasetRow } from "../services/api";
 
 interface DatasetTableProps {
   onShowToast: (msg: string) => void;

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { GraduationCap, Github, Menu, X, Sparkles, LayoutDashboard, BrainCircuit, BarChart2, Database, Info } from "lucide-react";
+import { GraduationCap, Github, Menu, X, Sparkles, LayoutDashboard, BrainCircuit, BarChart2, Database, Info, CloudSun } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
-export type NavTab = "home" | "predict" | "analytics" | "dataset" | "about";
+export type NavTab = "home" | "predict" | "analytics" | "dataset" | "about" | "weather";
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -18,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenG
     { id: "predict", label: "Predict", icon: <BrainCircuit className="w-4 h-4" /> },
     { id: "analytics", label: "Analytics", icon: <BarChart2 className="w-4 h-4" /> },
     { id: "dataset", label: "Dataset", icon: <Database className="w-4 h-4" /> },
+    { id: "weather", label: "Weather", icon: <CloudSun className="w-4 h-4" /> },
     { id: "about", label: "About", icon: <Info className="w-4 h-4" /> },
   ];
 

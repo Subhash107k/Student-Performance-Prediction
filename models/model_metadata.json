@@ -179,5 +179,7 @@
   ],
   "total_samples": 768,
   "train_samples": 614,
-  "test_samples": 154
+  "test_samples": 154,
+  "target_variable": "Performance",
+  "dataset_path": "data\\student_performance.csv"
 }

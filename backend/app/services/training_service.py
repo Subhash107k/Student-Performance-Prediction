@@ -43,6 +43,21 @@ IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 plt.style.use("seaborn-v0_8-whitegrid" if "seaborn-v0_8-whitegrid" in plt.style.available else "default")
 plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
 
+# Keep categorical cols for encoding
+CATEGORICAL_COLS = ["Gender", "Parent_Education", "Family_Support", "Internet_Access", "Extra_Activities", "Attendance_Category"]
+FEATURES = [
+    "Gender",
+    "Age",
+    "Study_Time_Hours",
+    "Attendance_Percentage",
+    "Previous_Score",
+    "Parent_Education",
+    "Family_Support",
+    "Internet_Access",
+    "Extra_Activities",
+    "Sleep_Hours",
+    "Study_Efficiency",
+]
 
 def ensure_dataset_exists() -> Path:
     if DATA_PATH.exists():
@@ -59,79 +74,20 @@ def ensure_dataset_exists() -> Path:
 def load_dataset() -> pd.DataFrame:
     ensure_dataset_exists()
     df = pd.read_csv(DATA_PATH)
+    
     required_cols = {"Performance"}
     missing_cols = required_cols.difference(df.columns)
     if missing_cols:
         raise ValueError(f"Dataset is missing required columns: {sorted(missing_cols)}")
 
     df = df.copy()
-    if "Performance" not in df.columns:
-        raise ValueError("Dataset must include a Performance column")
 
-    # Map the public dataset to the app's existing schema for UI compatibility.
-    column_mapping = {
-        "Pregnancies": "Study_Time_Hours",
-        "Glucose": "Attendance_Percentage",
-        "BloodPressure": "Previous_Score",
-        "SkinThickness": "Sleep_Hours",
-        "Insulin": "Final_Grade",
-        "BMI_Value": "BMI_Value",
-        "DiabetesPedigreeFunction": "Parent_Education",
-        "Age": "Age",
-    }
-    for source_col, target_col in column_mapping.items():
-        if source_col in df.columns and target_col not in df.columns:
-            df[target_col] = df[source_col]
+    # Data Cleaning
+    duplicates = df.duplicated().sum()
+    if duplicates > 0:
+        df = df.drop_duplicates().reset_index(drop=True)
 
-    # Create derived fields expected by the UI and training logic.
-    if "Final_Grade" not in df.columns:
-        df["Final_Grade"] = (df.get("Previous_Score", 0) + df.get("Attendance_Percentage", 0) * 0.5 + df.get("Study_Time_Hours", 0) * 2.0).clip(lower=0, upper=100)
-    if "Study_Efficiency" not in df.columns:
-        df["Study_Efficiency"] = np.round(df["Final_Grade"] / (df["Study_Time_Hours"] + 0.1), 2)
-    if "Attendance_Category" not in df.columns:
-        df["Attendance_Category"] = pd.cut(
-            df["Attendance_Percentage"],
-            bins=[0, 75, 90, 100],
-            labels=["Low", "Medium", "High"],
-            include_lowest=True,
-        )
-    if "Gender" not in df.columns:
-        df["Gender"] = "Unknown"
-    if "Family_Support" not in df.columns:
-        df["Family_Support"] = "Yes"
-    if "Internet_Access" not in df.columns:
-        df["Internet_Access"] = "Yes"
-    if "Extra_Activities" not in df.columns:
-        df["Extra_Activities"] = "No"
-    if "Parent_Education" not in df.columns:
-        df["Parent_Education"] = "Bachelor"
-
-    for col in ["Gender", "Parent_Education", "Family_Support", "Internet_Access", "Extra_Activities"]:
-        df[col] = df[col].fillna(df[col].mode().iloc[0])
-    for col in ["Age", "Study_Time_Hours", "Attendance_Percentage", "Previous_Score", "Sleep_Hours", "Final_Grade", "BMI_Value"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-            df[col] = df[col].fillna(df[col].median())
-
-    df = df.drop_duplicates().reset_index(drop=True)
-
-    numeric_cols = ["Age", "Study_Time_Hours", "Attendance_Percentage", "Previous_Score", "Sleep_Hours", "Final_Grade", "BMI_Value"]
-    for col in numeric_cols:
-        q1 = df[col].quantile(0.25)
-        q3 = df[col].quantile(0.75)
-        iqr = q3 - q1
-        lower = q1 - 1.5 * iqr
-        upper = q3 + 1.5 * iqr
-        df[col] = df[col].clip(lower=lower, upper=upper)
-
-    if "Previous_Score" not in df.columns:
-        df["Previous_Score"] = df["Final_Grade"]
-    if "Attendance_Percentage" not in df.columns:
-        df["Attendance_Percentage"] = df["Glucose"]
-    if "Study_Time_Hours" not in df.columns:
-        df["Study_Time_Hours"] = df["Pregnancies"]
-    if "Sleep_Hours" not in df.columns:
-        df["Sleep_Hours"] = df["SkinThickness"] / 10
+    # Feature Engineering
     df["Study_Efficiency"] = np.round(df["Previous_Score"] / (df["Study_Time_Hours"] + 0.1), 2)
     df["Attendance_Category"] = pd.cut(
         df["Attendance_Percentage"],
@@ -139,46 +95,43 @@ def load_dataset() -> pd.DataFrame:
         labels=["Low", "Medium", "High"],
         include_lowest=True,
     )
-    df["Performance"] = df["Performance"].astype(int)
+    
     return df
 
 
 def _generate_visuals(df: pd.DataFrame) -> None:
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
+    # 1. Performance Distribution
     plt.figure(figsize=(6, 4))
     ax = sns.countplot(x="Performance", data=df, palette=["#ef4444", "#10b981"])
-    plt.title("Performance Distribution", fontsize=12, fontweight="bold")
-    plt.xlabel("Performance")
+    plt.title("Performance Distribution (0=Low, 1=High)", fontsize=12, fontweight="bold")
+    plt.xlabel("Performance Level")
     plt.ylabel("Count")
-    plt.xticks([0, 1], ["Low", "High"])
-    for patch in ax.patches:
-        ax.annotate(
-            f"{int(patch.get_height())}",
-            (patch.get_x() + patch.get_width() / 2.0, patch.get_height()),
-            ha="center",
-            va="center",
-            xytext=(0, 5),
-            textcoords="offset points",
-            fontweight="bold",
-        )
+    plt.xticks([0, 1], ["Low Performance (Fail)", "High Performance (Pass)"])
+    for p in ax.patches:
+        ax.annotate(f"{int(p.get_height())}", (p.get_x() + p.get_width() / 2., p.get_height()),
+                    ha="center", va="center", xytext=(0, 5), textcoords="offset points", fontweight="bold")
     plt.tight_layout()
     plt.savefig(IMAGES_DIR / "performance_distribution.png", dpi=300)
     plt.close()
 
+    # 2. Attendance vs Performance
     plt.figure(figsize=(7, 4.5))
     sns.boxplot(x="Performance", y="Attendance_Percentage", data=df, palette=["#f87171", "#34d399"])
-    plt.title("Attendance vs Performance")
+    plt.title("Attendance Percentage vs Student Performance", fontsize=12, fontweight="bold")
+    plt.xticks([0, 1], ["Low Performance", "High Performance"])
     plt.tight_layout()
     plt.savefig(IMAGES_DIR / "attendance_vs_performance.png", dpi=300)
     plt.close()
 
-    plt.figure(figsize=(8, 6))
-    corr_matrix = df[["Age", "Study_Time_Hours", "Attendance_Percentage", "Previous_Score", "Sleep_Hours", "Study_Efficiency", "Final_Grade", "Performance"]].corr()
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm")
-    plt.title("Correlation Heatmap")
+    # 3. Study Time vs Performance
+    plt.figure(figsize=(7, 4.5))
+    sns.boxplot(x="Performance", y="Study_Time_Hours", data=df, palette=["#f87171", "#60a5fa"])
+    plt.title("Weekly Study Hours vs Student Performance", fontsize=12, fontweight="bold")
+    plt.xticks([0, 1], ["Low Performance", "High Performance"])
     plt.tight_layout()
-    plt.savefig(IMAGES_DIR / "correlation_heatmap.png", dpi=300)
+    plt.savefig(IMAGES_DIR / "study_vs_performance.png", dpi=300)
     plt.close()
 
 
@@ -186,32 +139,27 @@ def train_model() -> dict[str, Any]:
     df = load_dataset()
     _generate_visuals(df)
 
-    categorical_cols = ["Gender", "Parent_Education", "Family_Support", "Internet_Access", "Extra_Activities", "Attendance_Category"]
     encoded_df = df.copy()
     label_encoders: dict[str, LabelEncoder] = {}
-    for col in categorical_cols:
-        encoder = LabelEncoder()
-        encoded_df[col] = encoder.fit_transform(encoded_df[col].astype(str))
-        label_encoders[col] = encoder
+    for col in CATEGORICAL_COLS:
+        le = LabelEncoder()
+        encoded_df[col] = le.fit_transform(encoded_df[col].astype(str))
+        label_encoders[col] = le
 
-    features = [
-        "Gender",
-        "Age",
-        "Study_Time_Hours",
-        "Attendance_Percentage",
-        "Previous_Score",
-        "Parent_Education",
-        "Family_Support",
-        "Internet_Access",
-        "Extra_Activities",
-        "Sleep_Hours",
-        "Study_Efficiency",
-        "BMI_Value",
-    ]
-    X = encoded_df[features]
+    # 4. Correlation Heatmap (requires encoded categorical data)
+    plt.figure(figsize=(10, 8))
+    corr_matrix = encoded_df[FEATURES + ["Performance"]].corr()
+    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", linewidths=0.5, cbar=True)
+    plt.title("Feature Correlation Heatmap", fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(IMAGES_DIR / "correlation_heatmap.png", dpi=300)
+    plt.close()
+
+    X = encoded_df[FEATURES]
     y = encoded_df["Performance"]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
+    
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -219,23 +167,26 @@ def train_model() -> dict[str, Any]:
     models = {
         "Logistic Regression": LogisticRegression(random_state=42),
         "Decision Tree": DecisionTreeClassifier(random_state=42, max_depth=6),
-        "Random Forest": RandomForestClassifier(random_state=42, n_estimators=120, max_depth=8),
+        "Random Forest": RandomForestClassifier(random_state=42, n_estimators=100, max_depth=8),
         "Support Vector Machine": SVC(random_state=42, probability=True),
         "K-Nearest Neighbor": KNeighborsClassifier(n_neighbors=5),
         "Naive Bayes": GaussianNB(),
     }
 
     results: dict[str, dict[str, float]] = {}
+    confusion_matrices = {}
+    roc_curves_data = {}
+
     for name, model in models.items():
         if name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"}:
             model.fit(X_train_scaled, y_train)
             y_pred = model.predict(X_test_scaled)
-            y_proba = model.predict_proba(X_test_scaled)[:, 1]
+            y_proba = model.predict_proba(X_test_scaled)[:, 1] if hasattr(model, "predict_proba") else y_pred
             cv_scores = cross_val_score(model, X_train_scaled, y_train, cv=5, scoring="accuracy")
         else:
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
-            y_proba = model.predict_proba(X_test)[:, 1]
+            y_proba = model.predict_proba(X_test)[:, 1] if hasattr(model, "predict_proba") else y_pred
             cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring="accuracy")
 
         results[name] = {
@@ -245,61 +196,59 @@ def train_model() -> dict[str, Any]:
             "F1": round(float(f1_score(y_test, y_pred, zero_division=0)), 4),
             "ROC-AUC": round(float(roc_auc_score(y_test, y_proba)), 4),
             "CV_Mean": round(float(cv_scores.mean()), 4),
+            "CV_Std": round(float(cv_scores.std()), 4)
         }
+        confusion_matrices[name] = confusion_matrix(y_test, y_pred).tolist()
+        fpr, tpr, _ = roc_curve(y_test, y_proba)
+        roc_curves_data[name] = {"fpr": fpr.tolist(), "tpr": tpr.tolist(), "auc": round(float(roc_auc_score(y_test, y_proba)), 4)}
 
     results_df = pd.DataFrame(results).T.sort_values(by="Accuracy", ascending=False)
     best_model_name = results_df.index[0]
     best_model_obj = models[best_model_name]
 
-    importance_model = RandomForestClassifier(random_state=42, n_estimators=120, max_depth=8)
-    if best_model_name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"}:
-        importance_model.fit(X_train_scaled, y_train)
-    else:
-        importance_model.fit(X_train, y_train)
-    importances = importance_model.feature_importances_
-    ranked_features = [
-        {"feature": feature, "importance": round(float(value), 4)}
-        for feature, value in sorted(zip(features, importances), key=lambda item: item[1], reverse=True)
-    ]
-
-    confusion_matrices = {
-        name: confusion_matrix(y_test, models[name].predict(X_test_scaled if name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"} else X_test)).tolist()
-        for name in models
-    }
-
-    roc_curves = {}
-    for name, model in models.items():
-        y_pred_test = model.predict(X_test_scaled if name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"} else X_test)
-        y_proba_test = model.predict_proba(X_test_scaled if name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"} else X_test)[:, 1] if hasattr(model, "predict_proba") else y_pred_test
-        fpr, tpr, _ = roc_curve(y_test, y_proba_test)
-        roc_curves[name] = {"fpr": fpr.tolist(), "tpr": tpr.tolist(), "auc": round(float(roc_auc_score(y_test, y_proba_test)), 4)}
-
-    if best_model_name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"}:
-        best_model_predictions = best_model_obj.predict(X_test_scaled)
-    else:
-        best_model_predictions = best_model_obj.predict(X_test)
-    cm_best = confusion_matrix(y_test, best_model_predictions).tolist()
-
+    # Confusion matrix plot for best model
     plt.figure(figsize=(6, 5))
-    sns.heatmap(cm_best, annot=True, fmt="d", cmap="Blues", xticklabels=["Low", "High"], yticklabels=["Low", "High"])
-    plt.title(f"Confusion Matrix - {best_model_name}")
+    cm_best = np.array(confusion_matrices[best_model_name])
+    sns.heatmap(cm_best, annot=True, fmt="d", cmap="Blues", cbar=False,
+                xticklabels=["Low (0)", "High (1)"], yticklabels=["Low (0)", "High (1)"])
+    plt.title(f"Confusion Matrix - {best_model_name}", fontsize=12, fontweight="bold")
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
     plt.tight_layout()
     plt.savefig(IMAGES_DIR / "confusion_matrix.png", dpi=300)
     plt.close()
 
+    # ROC Curves plot
     plt.figure(figsize=(8, 6))
-    for name in models:
-        curve = roc_curves[name]
-        plt.plot(curve["fpr"], curve["tpr"], label=f"{name} (AUC={curve['auc']:.3f})")
+    for name, data in roc_curves_data.items():
+        plt.plot(data["fpr"], data["tpr"], label=f"{name} (AUC = {data['auc']:.3f})")
     plt.plot([0, 1], [0, 1], "k--", label="Random Chance")
-    plt.title("ROC Curves Comparison")
+    plt.title("ROC Curves Comparison Across Machine Learning Models", fontsize=12, fontweight="bold")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.legend(loc="lower right", fontsize=9)
     plt.tight_layout()
     plt.savefig(IMAGES_DIR / "roc_curve.png", dpi=300)
     plt.close()
 
+    # Feature Importance for Random Forest
+    rf_model = models["Random Forest"]
+    importances = rf_model.feature_importances_
+    indices = np.argsort(importances)[::-1]
+    
+    ranked_features = []
+    for f in range(len(FEATURES)):
+        ranked_features.append({
+            "feature": FEATURES[indices[f]],
+            "importance": round(float(importances[indices[f]]), 4)
+        })
+
     plt.figure(figsize=(9, 5))
-    sns.barplot(x="importance", y="feature", data=pd.DataFrame(ranked_features), palette="viridis")
-    plt.title("Feature Importance")
+    feat_df = pd.DataFrame(ranked_features)
+    sns.barplot(x="importance", y="feature", data=feat_df, palette="viridis")
+    plt.title("Random Forest Feature Importance Analysis", fontsize=12, fontweight="bold")
+    plt.xlabel("Relative Importance Score")
+    plt.ylabel("Features")
     plt.tight_layout()
     plt.savefig(IMAGES_DIR / "feature_importance.png", dpi=300)
     plt.close()
@@ -309,7 +258,7 @@ def train_model() -> dict[str, Any]:
         "model": best_model_obj,
         "scaler": scaler,
         "label_encoders": label_encoders,
-        "features": features,
+        "features": FEATURES,
         "best_model_name": best_model_name,
         "metrics": results,
         "feature_importances": ranked_features,
@@ -321,7 +270,7 @@ def train_model() -> dict[str, Any]:
         "metrics": results,
         "confusion_matrices": confusion_matrices,
         "feature_importances": ranked_features,
-        "features": features,
+        "features": FEATURES,
         "total_samples": int(len(df)),
         "train_samples": int(len(X_train)),
         "test_samples": int(len(X_test)),
@@ -369,10 +318,7 @@ def get_dataset_preview(limit: int = 50, offset: int = 0) -> list[dict[str, Any]
             "internetAccess": str(row["Internet_Access"]),
             "extraActivities": str(row["Extra_Activities"]),
             "sleepHours": round(float(row["Sleep_Hours"]), 1),
-            "hoursStudied": round(float(row["Study_Time_Hours"]), 1),
-            "assignmentsCompleted": int(round(float(row["Attendance_Percentage"]))),
-            "participationLevel": "High" if float(row["Attendance_Percentage"]) >= 85 else "Medium" if float(row["Attendance_Percentage"]) >= 70 else "Low",
-            "finalGrade": round(float(row["Final_Grade"]), 1),
+            "studyEfficiency": round(float(row["Study_Efficiency"]), 2),
             "performance": performance,
         }
 
@@ -422,7 +368,7 @@ def get_analytics() -> dict[str, Any]:
         study_hours_distribution.append(
             {
                 "hours": label,
-                "avgScore": round(float(subset["Final_Grade"].mean()), 1),
+                "avgScore": round(float(subset["Previous_Score"].mean()), 1),
             }
         )
 
@@ -436,7 +382,7 @@ def get_analytics() -> dict[str, Any]:
         correlation_matrix.append(
             {
                 "feature": feature,
-                "finalScore": round(float(df[feature].corr(df["Final_Grade"])), 2),
+                "finalScore": round(float(df[feature].corr(df["Performance"])), 2),
             }
         )
 
@@ -455,6 +401,18 @@ def get_analytics() -> dict[str, Any]:
         "correlationMatrix": correlation_matrix,
     }
 
+def encode_categorical_features(frame: pd.DataFrame, label_encoders: dict) -> pd.DataFrame:
+    encoded = frame.copy()
+    for col in CATEGORICAL_COLS:
+        if col not in encoded.columns:
+            continue
+        values = encoded[col].astype(str)
+        if col in label_encoders:
+            known_values = set(label_encoders[col].classes_)
+            fallback_value = next(iter(known_values), "Unknown")
+            encoded[col] = values.map(lambda v: v if v in known_values else fallback_value)
+            encoded[col] = label_encoders[col].transform(encoded[col].astype(str))
+    return encoded
 
 def predict_student(payload: dict[str, Any]) -> dict[str, Any]:
     bundle = load_model_bundle()
@@ -480,12 +438,8 @@ def predict_student(payload: dict[str, Any]) -> dict[str, Any]:
     normalized_payload["Attendance_Category"] = "High" if normalized_payload["Attendance_Percentage"] >= 90 else "Medium" if normalized_payload["Attendance_Percentage"] >= 75 else "Low"
 
     sample_df = pd.DataFrame([normalized_payload])
-    for col in label_encoders:
-        if col in sample_df.columns:
-            encoder = label_encoders[col]
-            sample_df[col] = sample_df[col].apply(lambda value: value if value in encoder.classes_ else encoder.classes_[0])
-            sample_df[col] = encoder.transform(sample_df[col].astype(str))
-
+    sample_df = encode_categorical_features(sample_df, label_encoders)
+    
     sample_features = sample_df[features]
     try:
         if model_name in {"Logistic Regression", "Support Vector Machine", "K-Nearest Neighbor", "Naive Bayes"}:
@@ -495,30 +449,28 @@ def predict_student(payload: dict[str, Any]) -> dict[str, Any]:
         else:
             pred = int(model.predict(sample_features)[0])
             prob = float(model.predict_proba(sample_features)[0][1])
-    except Exception:
-        sample_scaled = scaler.transform(sample_features)
-        pred = int(model.predict(sample_scaled)[0])
-        prob = float(model.predict_proba(sample_scaled)[0][1])
+    except Exception as e:
+        raise ValueError(f"Prediction error: {e}")
 
     status = "High Performance (Pass)" if pred == 1 else "Low Performance (Fail)"
     recommendations = []
     if normalized_payload["Attendance_Percentage"] < 80:
-        recommendations.append("Increase class attendance to above 85% to lower risk of underperformance.")
+        recommendations.append("Increase class attendance to above 85% to significantly lower risk of failure.")
     if normalized_payload["Study_Time_Hours"] < 10:
-        recommendations.append("Increase weekly study time to at least 10-12 hours for better retention.")
-    if normalized_payload["Previous_Score"] < 70:
-        recommendations.append("Schedule remediation sessions focused on core coursework.")
+        recommendations.append("Increase weekly study time to at least 12-15 hours.")
+    if normalized_payload["Previous_Score"] < 65:
+        recommendations.append("Schedule diagnostic tutoring focusing on foundational concepts.")
     if normalized_payload["Sleep_Hours"] < 6.5:
-        recommendations.append("Aim for 7-8 hours of sleep to improve focus and retention.")
+        recommendations.append("Optimize sleep hygiene to aim for 7-8 hours per night.")
     if not recommendations:
-        recommendations.append("Maintain consistent study habits and keep attendance strong.")
+        recommendations.append("Outstanding academic discipline! Maintain current study habits.")
 
     return {
         "success": True,
         "prediction": pred,
         "status": status,
         "probability": round(prob * 100, 1),
-        "estimated_grade": round(normalized_payload["Previous_Score"] * 0.4 + normalized_payload["Attendance_Percentage"] * 0.35 + normalized_payload["Study_Time_Hours"] * 0.15 + normalized_payload["Sleep_Hours"] * 2.5, 1),
+        "estimated_grade": round(normalized_payload["Previous_Score"], 1),
         "study_efficiency": round(normalized_payload["Study_Efficiency"], 2),
         "recommendations": recommendations,
         "model_used": model_name,

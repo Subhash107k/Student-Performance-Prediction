@@ -91,45 +91,8 @@ export const PredictionForm: React.FC<PredictionFormProps> = ({
         throw new Error("Prediction server error");
       }
     } catch (err) {
-      // Client-side fallback calculation if endpoint encounters issue
-      const isPass =
-        formData.previousScore * 0.4 +
-          formData.attendancePercentage * 0.4 +
-          formData.studyTimeHours * 1.5 >=
-        60;
-      const prob = Math.min(
-        Math.max(
-          Math.round(
-            (formData.previousScore * 0.5 +
-              formData.attendancePercentage * 0.4) *
-              10,
-          ) / 10,
-          35,
-        ),
-        98.5,
-      );
-
-      onPredict({
-        status: isPass ? "High Performance" : "Low Performance",
-        probability: prob,
-        estimatedGrade: Math.round(
-          (formData.previousScore + formData.attendancePercentage) / 2,
-        ),
-        studyEfficiency:
-          Math.round(
-            (formData.previousScore / (formData.studyTimeHours + 0.1)) * 100,
-          ) / 100,
-        recommendations: [
-          formData.attendancePercentage < 80
-            ? "Increase class attendance to above 85%."
-            : "Attendance is on track.",
-          formData.studyTimeHours < 10
-            ? "Increase study time to at least 12 hours per week."
-            : "Study time is adequate.",
-        ],
-        inputs: formData,
-      });
-      onShowToast("Model prediction completed!");
+      console.error(err);
+      onShowToast("Model prediction failed. Please ensure the backend is running.");
     } finally {
       setLoading(false);
     }

@@ -64,7 +64,7 @@ export const AnalyticsCharts: React.FC = () => {
       try {
         setLoading(true);
         const data = await fetchAnalytics();
-        setAnalytics(data as AnalyticsResponse);
+        setAnalytics(data as unknown as AnalyticsResponse);
       } catch (error) {
         setAnalytics(null);
       } finally {

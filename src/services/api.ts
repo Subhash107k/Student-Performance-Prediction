@@ -1,6 +1,6 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     headers: { "Content-Type": "application/json", ...(init?.headers || {}) },
     ...init,
@@ -26,10 +26,26 @@ export async function fetchDatasetSummary() {
   }>("/dataset");
 }
 
+export interface DatasetRow {
+  id: string;
+  gender: string;
+  age: number;
+  studyTimeHours: number;
+  attendancePercentage: number;
+  previousScore: number;
+  parentEducation: string;
+  familySupport: string;
+  internetAccess: string;
+  extraActivities: string;
+  sleepHours: number;
+  studyEfficiency: number;
+  performance: string;
+}
+
 export async function fetchDatasetPreview(limit = 50, offset = 0) {
   return request<{
     success: boolean;
-    rows: Array<Record<string, unknown>>;
+    rows: DatasetRow[];
     limit: number;
     offset: number;
   }>(`/dataset/preview?limit=${limit}&offset=${offset}`);
@@ -38,13 +54,43 @@ export async function fetchDatasetPreview(limit = 50, offset = 0) {
 export async function fetchAnalytics() {
   return request<{
     success: boolean;
-    overview: Record<string, unknown>;
-    modelMetrics: Array<Record<string, unknown>>;
-    featureImportances: Array<Record<string, unknown>>;
-    performanceDistribution: Array<Record<string, unknown>>;
-    studyHoursDistribution: Array<Record<string, unknown>>;
-    attendanceDistribution: Array<Record<string, unknown>>;
-    correlationMatrix: Array<Record<string, unknown>>;
+    overview: {
+      totalSamples: number;
+      bestModel: string;
+      bestAccuracy: number;
+    };
+    modelMetrics: Array<{
+      model: string;
+      accuracy: number;
+      precision: number;
+      recall: number;
+      f1: number;
+      rocAuc: number;
+      isBest: boolean;
+    }>;
+    featureImportances: Array<{
+      feature: string;
+      importance: number;
+      percentage: number;
+    }>;
+    performanceDistribution: Array<{
+      name: string;
+      value: number;
+      color: string;
+      percentage: number;
+    }>;
+    studyHoursDistribution: Array<{
+      hours: string;
+      avgScore: number;
+    }>;
+    attendanceDistribution: Array<{
+      range: string;
+      count: number;
+    }>;
+    correlationMatrix: Array<{
+      feature: string;
+      finalScore: number;
+    }>;
   }>("/analytics");
 }
 
@@ -70,4 +116,16 @@ export async function predictStudent(payload: Record<string, unknown>) {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchProjectData() {
+  return request<{
+    success: boolean;
+    model_ready: boolean;
+    metadata: {
+      best_model: string;
+      metrics: Record<string, any>;
+      feature_importances: Array<{ feature: string; importance: number }>;
+    };
+  }>("/model/status");
 }
