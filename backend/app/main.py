@@ -176,3 +176,26 @@ def download_file(filename: str) -> Any:
         raise HTTPException(status_code=404, detail="File not found or still generating")
         
     return FileResponse(path=file_path, filename=filename)
+
+from fastapi.staticfiles import StaticFiles
+
+root_dir = Path(__file__).resolve().parents[2]
+dist_dir = root_dir / "dist"
+
+if dist_dir.exists():
+    assets_dir = dist_dir / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    def serve_frontend_app(full_path: str) -> Any:
+        if full_path.startswith(("api", "docs", "openapi.json", "health", "weather", "dataset", "predict", "analytics", "metrics", "download", "model")):
+            raise HTTPException(status_code=404, detail="Not Found")
+        target_file = dist_dir / full_path
+        if target_file.exists() and target_file.is_file():
+            return FileResponse(target_file)
+        index_file = dist_dir / "index.html"
+        if index_file.exists():
+            return FileResponse(index_file)
+        raise HTTPException(status_code=404, detail="Not Found")
+
