@@ -1,8 +1,32 @@
+# Dependencies
 node_modules/
-build/
+.venv/
+venv/
+ENV/
+env/
+
+# Production build outputs
 dist/
+build/
 coverage/
+
+# Python bytecode & cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# IDEs & System files
+.vscode/
+.idea/
 .DS_Store
 *.log
-.env*
-!.env.example

@@ -104,7 +104,7 @@ def _generate_visuals(df: pd.DataFrame) -> None:
 
     # 1. Performance Distribution
     plt.figure(figsize=(6, 4))
-    ax = sns.countplot(x="Performance", data=df, palette=["#ef4444", "#10b981"])
+    ax = sns.countplot(x="Performance", hue="Performance", data=df, palette=["#ef4444", "#10b981"], legend=False)
     plt.title("Performance Distribution (0=Low, 1=High)", fontsize=12, fontweight="bold")
     plt.xlabel("Performance Level")
     plt.ylabel("Count")
@@ -118,7 +118,7 @@ def _generate_visuals(df: pd.DataFrame) -> None:
 
     # 2. Attendance vs Performance
     plt.figure(figsize=(7, 4.5))
-    sns.boxplot(x="Performance", y="Attendance_Percentage", data=df, palette=["#f87171", "#34d399"])
+    sns.boxplot(x="Performance", y="Attendance_Percentage", hue="Performance", data=df, palette=["#f87171", "#34d399"], legend=False)
     plt.title("Attendance Percentage vs Student Performance", fontsize=12, fontweight="bold")
     plt.xticks([0, 1], ["Low Performance", "High Performance"])
     plt.tight_layout()
@@ -127,7 +127,7 @@ def _generate_visuals(df: pd.DataFrame) -> None:
 
     # 3. Study Time vs Performance
     plt.figure(figsize=(7, 4.5))
-    sns.boxplot(x="Performance", y="Study_Time_Hours", data=df, palette=["#f87171", "#60a5fa"])
+    sns.boxplot(x="Performance", y="Study_Time_Hours", hue="Performance", data=df, palette=["#f87171", "#60a5fa"], legend=False)
     plt.title("Weekly Study Hours vs Student Performance", fontsize=12, fontweight="bold")
     plt.xticks([0, 1], ["Low Performance", "High Performance"])
     plt.tight_layout()
@@ -245,7 +245,7 @@ def train_model() -> dict[str, Any]:
 
     plt.figure(figsize=(9, 5))
     feat_df = pd.DataFrame(ranked_features)
-    sns.barplot(x="importance", y="feature", data=feat_df, palette="viridis")
+    sns.barplot(x="importance", y="feature", hue="feature", data=feat_df, palette="viridis", legend=False)
     plt.title("Random Forest Feature Importance Analysis", fontsize=12, fontweight="bold")
     plt.xlabel("Relative Importance Score")
     plt.ylabel("Features")

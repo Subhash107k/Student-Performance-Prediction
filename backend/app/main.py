@@ -22,12 +22,17 @@ cors_origins = [
     "http://localhost:4173",
     "http://localhost:3000",
 ]
-if os.getenv("FRONTEND_URL"):
-    cors_origins.append(os.getenv("FRONTEND_URL"))
+
+frontend_url_env = os.getenv("FRONTEND_URL")
+if frontend_url_env:
+    for url in frontend_url_env.split(","):
+        cleaned_url = url.strip().rstrip("/")
+        if cleaned_url and cleaned_url not in cors_origins:
+            cors_origins.append(cleaned_url)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins if os.getenv("FRONTEND_URL") else ["*"],
+    allow_origins=cors_origins if frontend_url_env else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
